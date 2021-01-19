@@ -13,14 +13,14 @@ const urlDatabase = {
 
 
 const generateRandomString = () => {
-  return (Math.random().toString(36).substring(2,8))
-}
+  return (Math.random().toString(36).substring(2,8));
+};
 
 
 app.post("/urls", (req, res) => {
   const ID = generateRandomString();
-  urlDatabase[ID] = {longURL : req.body.longURL}
-  res.redirect(`/urls/${ID}`)
+  urlDatabase[ID] = {longURL : req.body.longURL};
+  res.redirect(`/urls/${ID}`);
 });
 
 app.get("/", (req, res) => {
@@ -46,8 +46,12 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+app.post("/urls/:shortURL/delete", (req, res) =>{
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
+});
+
 app.get("/u/:shortURL", (req, res) => {
-  // const longURL = ...
   const longURL = urlDatabase[req.params.shortURL];
   if (longURL === undefined) {
     res.send('404, try again');
