@@ -23,6 +23,11 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${ID}`);
 });
 
+app.post("/urls:id", (req,res) => {
+  urlDatabase[req.body.id] = req.body.id.longURL
+  res.redirect('/urls');
+})
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
