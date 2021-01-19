@@ -11,14 +11,16 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
 const generateRandomString = () => {
-  return (Math.random().toString(36).substr(2, 6))
+  return (Math.random().toString(36).substring(2,8))
 }
 
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  const ID = generateRandomString();
+  urlDatabase[ID] = {longURL : req.body.longURL}
+  res.redirect(`/urls/${ID}`)
 });
 
 app.get("/", (req, res) => {
@@ -33,17 +35,29 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+app.get("/urls/new", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_new", templateVars);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  // const longURL = ...
+  const longURL = urlDatabase[req.params.shortURL];
+  if (longURL === undefined) {
+    res.send('404, try again');
+  } else {
+    res.redirect(longURL);
+  }
+});
+
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: "https://www.tsn.ca"};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
 });
 
