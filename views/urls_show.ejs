@@ -22,7 +22,12 @@
   <div class="card text-center">
     <div class="card-body">
       <h2 class="card-title">Edit</h5>
-      <p class="card-text"><input type ="text"> <input type="submit" value = "Edit"></a></p>
+      <p class="card-text">
+        <form method="POST" action="/urls/<%= shortURL %>">
+          <input type="text" name="newURL" ></a>
+          <button>Edit</button>
+        </form>
+      </p>
     </div>
   
   <div class="card-footer text-muted"></div>
