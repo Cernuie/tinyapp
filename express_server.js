@@ -16,6 +16,11 @@ const generateRandomString = () => {
   return (Math.random().toString(36).substring(2,8));
 };
 
+app.post("/login", (req, res) => {
+  console.log(req.body.userID)
+  res.cookie(req.body.userID);
+  res.redirect(`/urls`)
+})
 
 app.post("/urls", (req, res) => {
   const ID = generateRandomString();

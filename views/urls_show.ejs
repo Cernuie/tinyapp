@@ -9,7 +9,7 @@
 <body>
   
 <header>
-  <%- include('./partials/header'); %>
+  <%- include('./partials/_header'); %>
 </header>
   <div class="card text-center">
       <div class="card-header"></div>
@@ -24,7 +24,7 @@
       <h2 class="card-title">Edit</h5>
       <p class="card-text">
         <form method="POST" action="/urls/<%= shortURL %>">
-          <input type="text" name="newURL" ></a>
+          <input type="text" name="newURL" >
           <button>Edit</button>
         </form>
       </p>
