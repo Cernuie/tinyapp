@@ -8,13 +8,13 @@ const emailExists = (users, email) => {
 
 const passwordMatching = (users, email, password) => {
   if (users[email].password === password) {
-    return true
+    return true;
   } else {
-    return false
+    return false;
   }
-}
+};
 
 module.exports = {
   emailExists,
   passwordMatching
-}
+};

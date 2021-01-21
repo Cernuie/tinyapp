@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
-const { emailExists, passwordMatching } = require('./helperFuncs')
+const { emailExists, passwordMatching } = require('./helperFuncs');
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -25,8 +25,8 @@ app.listen(PORT, () => {
 });
 
 app.post("/login", (req, res) => {
-  const email = req.body.email
-  const pwd = req.body.password
+  const email = req.body.email;
+  const pwd = req.body.password;
   // if the email coming in from the form is the same as pollo@pockpock.com, then it's a valid user
   if (emailExists(users, email)) {
     if (passwordMatching(users, email, pwd)) {
@@ -34,16 +34,16 @@ app.post("/login", (req, res) => {
         email: email,
         password: pwd,
       };
-      res.cookie('user_id', currentUser)
-      res.redirect("/urls")
+      res.cookie('user_id', currentUser);
+      res.redirect("/urls");
     } else {
       res.status(403);
-      res.send("Error 403: Bad password, try again!")
-      console.log('BAD PASSWORD')
+      res.send("Error 403: Bad password, try again!");
+      console.log('BAD PASSWORD');
     }
   } else {
     res.status(403);
-    res.send("Error 403: Wrong email, try again!")
+    res.send("Error 403: Wrong email, try again!");
   }
 });
 
@@ -75,11 +75,11 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   if (emailExists(users, email)) {
     res.status(400);
-    res.send('Error code 400: This email already exists.')
+    res.send('Error code 400: This email already exists.');
     res.redirect("/register");
-  } else if (req.body.email === '' || req.body.password === ''){
+  } else if (req.body.email === '' || req.body.password === '') {
     res.status(400);
-    res.send('Error code 400, password/email is blank')
+    res.send('Error code 400, password/email is blank');
   } else {
     const newUser = {
       email: email,
@@ -87,7 +87,7 @@ app.post("/register", (req, res) => {
     };
     users[email] = newUser;
     res.cookie("user_id", newUser);
-    console.log(res.cookie.user_id)
+    console.log(res.cookie.user_id);
     res.redirect("/urls");
   }
 });
@@ -106,13 +106,13 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   console.log(users);
-  res.render("urls_login")
-})
+  res.render("urls_login");
+});
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: req.cookies.user_id,
-    urls: urlDatabase 
+    urls: urlDatabase
   };
   res.render("urls_new", templateVars);
 });
@@ -120,7 +120,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: req.cookies.user_id,
-    urls: urlDatabase 
+    urls: urlDatabase
   };
   console.log(users);
   res.render("urls_index", templateVars);
