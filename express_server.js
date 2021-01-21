@@ -16,13 +16,13 @@ const urlDatabase = {
 
 const urlforUsers = (id) => {
   returnedURLs = {};
-    for(short of Object.keys(urlDatabase)) {
-      if(id === urlDatabase[short]["userID"]) {
-        returnedURLs[short] = urlDatabase[short];
-      }
+  for (short of Object.keys(urlDatabase)) {
+    if (id === urlDatabase[short]["userID"]) {
+      returnedURLs[short] = urlDatabase[short];
     }
-  return returnedURLs
-}
+  }
+  return returnedURLs;
+};
 
 const users = {email: "cernvii@gmail.com",
   userID: "22t2rqvv",
@@ -83,12 +83,24 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) =>{
-  delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls');
+  console.log(urlDatabase[req.params.shortURL]);
+  if (req.cookies.user_id) {
+    if (req.cookies.user_id["userID"] === urlDatabase[req.params.shortURL].userID) {
+      delete urlDatabase[req.params.shortURL];
+      res.redirect('/urls');
+    } else {
+      res.status(400);
+      res.send("This isn't your URL to delete, please log in to the account to delete it.");
+    }
+  } else {
+    res.status(400);
+    res.send("You aren't logged in, please log in to delete this URL");
+  }
 });
 
 app.post("/register", (req, res) => {
-  //check if email already exists
+  //check if email already exists, then if they match
+  //if they do we'll make a new user and generate a session cookie
   const pass = req.body.password;
   const email = req.body.email;
   if (emailExists(users, email)) {
@@ -140,12 +152,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let urls = undefined
+  let urls = undefined;
   if (req.cookies.user_id) {
     urls = urlforUsers(req.cookies.user_id["userID"]);
     console.log(urlDatabase);
     console.log(req.cookies.user_id["userID"]);
-  } 
+  }
   const templateVars = {
     user: req.cookies.user_id,
     urls: urls,
