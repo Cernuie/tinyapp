@@ -14,6 +14,12 @@ const passwordMatching = (users, email, password) => {
   }
 };
 
+const urlDatabase = {
+  "b2xVn2": {longurl: "http://www.lighthouselabs.ca", userID: "22t2rqvv"},
+  "9sm5xK": {longurl: "http://www.google.com", userID: "22t2rqvv"},
+  "9sm5xa": {longurl: "http://www.google.ca", userID: "22t2rqvv"}
+};
+
 module.exports = {
   emailExists,
   passwordMatching

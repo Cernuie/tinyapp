@@ -14,6 +14,16 @@ const urlDatabase = {
   "9sm5xK": {longurl: "http://www.google.com", userID: "22t2rqvv"}
 };
 
+const urlforUsers = (id) => {
+  returnedURLs = {};
+    for(short of Object.keys(urlDatabase)) {
+      if(id === urlDatabase[short]["userID"]) {
+        returnedURLs[short] = urlDatabase[short];
+      }
+    }
+  return returnedURLs
+}
+
 const users = {email: "cernvii@gmail.com",
   userID: "22t2rqvv",
   password: "asd"};
@@ -53,18 +63,17 @@ app.post("/login", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const ID = generateRandomString();
-  console.log(ID);
   const urlObj = {
     longurl: req.body.longURL,
-    userID: res.cookies.user_id
+    userID: req.cookies.user_id["userID"]
   };
-  console.log(urlDatabase);
   urlDatabase[ID] = urlObj;
   res.redirect(`/urls/${ID}`);
 });
 
 app.post("/urls/:id", (req,res) => {
-  urlDatabase[req.params.id] = req.body.newURL;
+  console.log(req.params.id);
+  urlDatabase[req.params.id].longurl = req.body.newURL;
   res.redirect('/urls');
 });
 
@@ -122,7 +131,7 @@ app.get("/urls/new", (req, res) => {
   if (req.cookies.user_id) {
     const templateVars = {
       user: req.cookies.user_id,
-      urls: urlDatabase
+      urls: urlforUsers(req.cookies.user_id["userID"]),
     };
     res.render("urls_new", templateVars);
   } else {
@@ -131,18 +140,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  let urls = undefined
+  if (req.cookies.user_id) {
+    urls = urlforUsers(req.cookies.user_id["userID"]);
+    console.log(urlDatabase);
+    console.log(req.cookies.user_id["userID"]);
+  } 
   const templateVars = {
     user: req.cookies.user_id,
-    urls: urlDatabase
+    urls: urls,
   };
-  console.log(users);
-  console.log(urlDatabase);
   res.render("urls_index", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  console.log(urlDatabase);
   const longURL = urlDatabase[req.params.shortURL]["longurl"];
-  console.log(longURL);
   if (longURL === undefined) {
     res.send('404, try again');
   } else {
@@ -151,7 +164,6 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  console.log(urlDatabase);
   const templateVars =
   {
     user: req.cookies.user_id,
