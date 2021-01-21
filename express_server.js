@@ -3,17 +3,11 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
+const { emailExists, passwordMatching, fetchUser } = require('./helperFuncs')
+
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-
-const emailExists = (users, email) => {
-  if (users[email]) {
-    return true;
-  } else {
-    return false;
-  }
-};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -32,7 +26,27 @@ app.listen(PORT, () => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  const email = req.body.email
+  const pwd = req.body.password
+  // if the email coming in from the form is the same as pollo@pockpock.com, then it's a valid user
+  if (emailExists(users, email)) {
+    if (passwordMatching(users, email, pwd)) {
+      const currentUser = {
+        username: req.body.name,
+        email: email,
+        password: pwd,
+      };
+      res.cookie('user_id', currentUser)
+      res.redirect("/urls")
+    } else {
+      console.log('BAD PASSWORD')
+      res.redirect("/login")
+    }
+  } else {
+    console.log('BAD EMAIL')
+    res.redirect("/login")
+  }
+  res.cookie("user_id", req.body.username);
   res.redirect(`/urls`);
 });
 
@@ -49,7 +63,7 @@ app.post("/urls/:id", (req,res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
@@ -64,8 +78,12 @@ app.post("/register", (req, res) => {
   const pass = req.body.password;
   const email = req.body.email;
   if (emailExists(users, email)) {
-    console.log("email already exists");
+    res.status(400);
+    res.send('Error code 400: This email already exists.')
     res.redirect("/register");
+  } else if (req.body.email === '' || req.body.password === ''){
+    res.status(400);
+    res.send('Error code 400, password/email is blank')
   } else {
     const newUser = {
       username: user,
@@ -73,13 +91,14 @@ app.post("/register", (req, res) => {
       password: pass,
     };
     users[email] = newUser;
-    console.log(users);
+    res.cookie("user_id", newUser);
+    console.log(res.cookie.user_id)
     res.redirect("/urls");
   }
 });
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect("urls");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -90,18 +109,26 @@ app.get("/register", (req, res) => {
   res.render("urls_register");
 });
 
+app.get("/login", (req, res) => {
+  console.log(users);
+  res.render("urls_login")
+})
+
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies.username,
-    urls: urlDatabase };
+    user: req.cookies.user_id,
+    email: req.cookies.user_id.email,
+    urls: urlDatabase 
+  };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies.username,
-    urls: urlDatabase
+    user: req.cookies.user_id,
+    urls: urlDatabase 
   };
+  console.log(users);
   res.render("urls_index", templateVars);
 });
 
@@ -117,14 +144,10 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars =
   {
-    username: req.cookies.username,
+    user: req.cookies.user_id,
+    email: req.cookies.user_id.email,
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
   res.render("urls_show", templateVars);
 });
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
