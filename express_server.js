@@ -15,8 +15,8 @@ const urlDatabase = {
 };
 
 const urlforUsers = (id) => {
-  returnedURLs = {};
-  for (short of Object.keys(urlDatabase)) {
+  let returnedURLs = {};
+  for (let short of Object.keys(urlDatabase)) {
     if (id === urlDatabase[short]["userID"]) {
       returnedURLs[short] = urlDatabase[short];
     }
@@ -72,9 +72,18 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id", (req,res) => {
-  console.log(req.params.id);
-  urlDatabase[req.params.id].longurl = req.body.newURL;
-  res.redirect('/urls');
+  if (req.cookies.user_id) {
+    if (req.cookies.user_id["userID"] === urlDatabase[req.params.shortURL].userID) {
+      urlDatabase[req.params.id].longurl = req.body.newURL;
+      res.redirect('/urls');
+    } else {
+      res.status(400);
+      res.send("This isn't your URL to edit, please log in to the account to edit it.");
+    }
+  } else {
+    res.status(400);
+    res.send("You aren't logged in, please log in to edit this URL");
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -83,7 +92,6 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) =>{
-  console.log(urlDatabase[req.params.shortURL]);
   if (req.cookies.user_id) {
     if (req.cookies.user_id["userID"] === urlDatabase[req.params.shortURL].userID) {
       delete urlDatabase[req.params.shortURL];
