@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
-const { emailExists, passwordMatching, fetchUser } = require('./helperFuncs')
+const { emailExists, passwordMatching } = require('./helperFuncs')
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -14,8 +14,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-const users = {
-};
+const users = { };
 
 const generateRandomString = () => {
   return (Math.random().toString(36).substring(2,8));
@@ -32,22 +31,20 @@ app.post("/login", (req, res) => {
   if (emailExists(users, email)) {
     if (passwordMatching(users, email, pwd)) {
       const currentUser = {
-        username: req.body.name,
         email: email,
         password: pwd,
       };
       res.cookie('user_id', currentUser)
       res.redirect("/urls")
     } else {
+      res.status(403);
+      res.send("Error 403: Bad password, try again!")
       console.log('BAD PASSWORD')
-      res.redirect("/login")
     }
   } else {
-    console.log('BAD EMAIL')
-    res.redirect("/login")
+    res.status(403);
+    res.send("Error 403: Wrong email, try again!")
   }
-  res.cookie("user_id", req.body.username);
-  res.redirect(`/urls`);
 });
 
 app.post("/urls", (req, res) => {
@@ -74,7 +71,6 @@ app.post("/urls/:shortURL/delete", (req, res) =>{
 
 app.post("/register", (req, res) => {
   //check if email already exists
-  const user = req.body.name;
   const pass = req.body.password;
   const email = req.body.email;
   if (emailExists(users, email)) {
@@ -86,7 +82,6 @@ app.post("/register", (req, res) => {
     res.send('Error code 400, password/email is blank')
   } else {
     const newUser = {
-      username: user,
       email: email,
       password: pass,
     };
@@ -117,7 +112,6 @@ app.get("/login", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: req.cookies.user_id,
-    email: req.cookies.user_id.email,
     urls: urlDatabase 
   };
   res.render("urls_new", templateVars);
@@ -145,7 +139,6 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars =
   {
     user: req.cookies.user_id,
-    email: req.cookies.user_id.email,
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
