@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 const emailExists = (users, email) => {
   if (users[email]) {
     return true;
@@ -6,8 +8,8 @@ const emailExists = (users, email) => {
   }
 };
 
-const passwordMatching = (users, email, password) => {
-  if (users[email].password === password) {
+const passwordMatching = (password, hashedPass) => {
+  if (bcrypt.compareSync(password, hashedPass)) {
     return true;
   } else {
     return false;

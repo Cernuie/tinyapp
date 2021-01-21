@@ -1,6 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcrypt');
+
 const app = express();
 const PORT = 8080;
 const { emailExists, passwordMatching } = require('./helperFuncs');
@@ -41,12 +43,13 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const pwd = req.body.password;
   if (emailExists(users, email)) {
-    if (passwordMatching(users, email, pwd)) {
+    const hashedPass = users[email]["hashedPass"];
+    if (passwordMatching(pwd, hashedPass)) {
       const loggedID = users[req.body.email].userID;
       const currentUser = {
         email: email,
         userID: loggedID,
-        password: pwd,
+        password: hashedPass,
       };
       res.cookie('user_id', currentUser);
       res.redirect("/urls");
@@ -110,7 +113,9 @@ app.post("/register", (req, res) => {
   //check if email already exists, then if they match
   //if they do we'll make a new user and generate a session cookie
   const pass = req.body.password;
+  const hashedPass = bcrypt.hashSync(pass, 10);
   const email = req.body.email;
+  const userID = generateRandomString();
   if (emailExists(users, email)) {
     res.status(400);
     res.send('Error code 400: This email already exists.');
@@ -121,8 +126,8 @@ app.post("/register", (req, res) => {
   } else {
     const newUser = {
       email: email,
-      userID: generateRandomString(),
-      password: pass,
+      userID: userID,
+      hashedPass: hashedPass
     };
     users[email] = newUser;
     res.cookie("user_id", newUser);
