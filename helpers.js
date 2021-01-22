@@ -9,7 +9,6 @@ const urlforUsers = (id, urlDatabase) => {
   //helper that finds the urls of a given user by looping through url database
   let returnedURLs = {};
   for (let short of Object.keys(urlDatabase)) {
-    console.log(short);
     if (id === urlDatabase[short]["userID"]) {
       returnedURLs[short] = urlDatabase[short];
     }
