@@ -1,13 +1,5 @@
 const bcrypt = require('bcrypt');
 
-const emailExists = (users, email) => {
-  if (users[email]) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
 const generateRandomString = () => {
   return (Math.random().toString(36).substring(2,8));
 };
@@ -23,6 +15,15 @@ const urlforUsers = (id, urlDatabase) => {
   return returnedURLs;
 };
 
+const checkEmails = (email, emailList) => {
+  for (let key of Object.keys(emailList)) {
+    if (emailList[key] === email) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
 
 const addNewUser = (userID, email, password, users) => {
   const salt = bcrypt.genSaltSync(10);
@@ -31,15 +32,15 @@ const addNewUser = (userID, email, password, users) => {
     email,
     password: bcrypt.hashSync(password, salt),
   };
-  users[userID] = newUser;
+  users[email] = newUser;
   return userID;
 };
 
 
 module.exports = {
-  emailExists,
   generateRandomString,
   urlforUsers,
-  addNewUser
+  addNewUser,
+  checkEmails
 };
 

@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080;
-const { emailExists, generateRandomString, urlforUsers, addNewUser } = require('./helperFuncs');
+const { generateRandomString, urlforUsers, addNewUser, checkEmails } = require('./helperFuncs');
 
 app.use(
   cookieSession({
@@ -13,8 +13,6 @@ app.use(
     keys: ['key1', 'key2'],
   })
 );
-
-
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
@@ -24,7 +22,7 @@ const urlDatabase = {
   "9sm5xK": {longurl: "http://www.google.com", userID: "5fxigd"}
 };
 
-const users = { '5fxigd':
+const users = { 'cernvii@gmail.com':
 { id: '5fxigd',
   email: 'cernvii@gmail.com',
   password:
@@ -32,7 +30,7 @@ const users = { '5fxigd':
   
 };
 
-
+const emailList = {'5fxigd': "cernvii@gmail.com"};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -41,7 +39,7 @@ app.listen(PORT, () => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const pwd = req.body.password;
-  if (emailExists(users, email)) {
+  if (checkEmails(email, emailList)) {
     if (bcrypt.compareSync(pwd, users[email]["password"])) {
       req.session['user_id'] = users[email]["id"];
       res.redirect("/urls");
@@ -67,8 +65,6 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:id", (req,res) => {
   if (req.session["user_id"]) {
-    console.log(req.params.id);
-    console.log(urlDatabase);
     //i'm not actually sure why this became params.id
     if (req.session["user_id"] === urlDatabase[req.params.id]["userID"]) {
       urlDatabase[req.params.id].longurl = req.body.newURL;
@@ -109,7 +105,7 @@ app.post("/register", (req, res) => {
   const pass = req.body.password;
   const email = req.body.email;
   const userID = generateRandomString();
-  if (emailExists(users, email)) {
+  if (checkEmails(email, emailList)) {
     res.status(400);
     res.send('Error code 400: This email already exists.');
     res.redirect("/register");
@@ -119,7 +115,7 @@ app.post("/register", (req, res) => {
   } else {
     const newUser = addNewUser(userID, email, pass, users);
     req.session['user_id'] = newUser;
-    console.log(users);
+    emailList[userID] = email;
     res.redirect("/urls");
   }
 });
@@ -137,7 +133,6 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  console.log(users);
   res.render("urls_login");
 });
 
@@ -146,7 +141,7 @@ app.get("/urls/new", (req, res) => {
   if (req.session["user_id"]) {
     const templateVars = {
       user: req.session["user_id"],
-      email: users[req.session["user_id"]]["email"],
+      email: emailList[req.session["user_id"]],
       urls: urls,
     };
     res.render("urls_new", templateVars);
@@ -158,10 +153,9 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   let urls = undefined;
   let email = undefined;
-  console.log(req.session["user_id"]);
   if (req.session["user_id"]) {
     urls = urlforUsers(req.session["user_id"], urlDatabase);
-    email = users[req.session["user_id"]]["email"]
+    email = emailList[req.session["user_id"]];
   }
   const templateVars = {
     user: req.session["user_id"],
@@ -184,7 +178,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars =
   {
     user: req.session["user_id"],
-    email: users[req.session["user_id"]]["email"],
+    email: emailList[req.session["user_id"]],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longurl
   };
