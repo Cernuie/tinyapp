@@ -21,7 +21,7 @@ const addNewUser = (userID, email, password) => {
     email,
     password: bcrypt.hashSync(password, salt),
   };
-  users[email] = newUser;
+  users[userID] = newUser;
   return userID;
 };
 
@@ -35,7 +35,7 @@ const urlDatabase = {
 };
 
 
-const users = { 'cernvii@gmail.com':
+const users = { '5fxigd':
 { id: '5fxigd',
   email: 'cernvii@gmail.com',
   password:
@@ -157,6 +157,7 @@ app.get("/urls/new", (req, res) => {
   if (req.session["user_id"]) {
     const templateVars = {
       user: req.session["user_id"],
+      email: users[req.session["user_id"]]["email"],
       urls: urls,
     };
     res.render("urls_new", templateVars);
@@ -174,6 +175,7 @@ app.get("/urls", (req, res) => {
   }
   const templateVars = {
     user: req.session["user_id"],
+    email: users[req.session["user_id"]]["email"],
     urls: urls,
   };
   res.render("urls_index", templateVars);
@@ -192,6 +194,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars =
   {
     user: req.session["user_id"],
+    email: users[req.session["user_id"]]["email"],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longurl
   };
