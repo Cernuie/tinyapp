@@ -2,21 +2,20 @@ const express = require("express");
 const bodyParser = require("body-parser");
 let cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-
 const app = express();
 const PORT = 8080;
-const { generateRandomString, urlforUsers, addNewUser, checkEmails, getUserByEmail } = require('./helpers');
-
+const { generateRandomString, urlforUsers, addNewUser, checkEmails, getUserByEmail, getEmailByUser } = require('./helpers');
 app.use(
   cookieSession({
     name: 'session',
     keys: ['key1', 'key2'],
   })
 );
-
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
+/* Initalized 3 databases, a url database, and a user database
+*/
 const urlDatabase = {
   "b2xVn2": {longurl: "http://www.lighthouselabs.ca", userID: "5fxigd"},
   "9sm5xK": {longurl: "http://www.google.com", userID: "5fxigd"}
@@ -30,15 +29,23 @@ const users = { 'cernvii@gmail.com':
   
 };
 
-const emailList = {'5fxigd': "cernvii@gmail.com"};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+//decided to group things by post and get
+
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const pwd = req.body.password;
+  //when post to login, we check to see if the email and password fields are correct
+  //if it passes every test we initialize a session cookie and redirect them to /urls
+  if (email === "" || pwd === "") {
+    res.status(403);
+    res.send("Error 403: Please enter an email/password!");
+  }
+
   if (getUserByEmail) {
     if (bcrypt.compareSync(pwd, users[email]["password"])) {
       req.session['user_id'] = users[email]["id"];
@@ -64,6 +71,8 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id", (req,res) => {
+  //this is for editing urls
+  //checks to see if the session id cookie matches, then changes the longURL.
   if (req.session["user_id"]) {
     //i'm not actually sure why this became params.id
     if (req.session["user_id"] === urlDatabase[req.params.id]["userID"]) {
@@ -80,11 +89,14 @@ app.post("/urls/:id", (req,res) => {
 });
 
 app.post("/logout", (req, res) => {
+  //log out by clearing cookie
   req.session['user_id'] = null;
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/delete", (req, res) =>{
+  //this is the delete post,
+  //checks to see if the cookies match, then allows the deletion.
   if (req.session["user_id"]) {
     if (req.session["user_id"] === urlDatabase[req.params.shortURL]["userID"]) {
       delete urlDatabase[req.params.shortURL];
@@ -105,7 +117,7 @@ app.post("/register", (req, res) => {
   const pass = req.body.password;
   const email = req.body.email;
   const userID = generateRandomString();
-  if (checkEmails(email, emailList)) {
+  if (checkEmails(email, users)) {
     res.status(400);
     res.send('Error code 400: This email already exists.');
     res.redirect("/register");
@@ -115,7 +127,6 @@ app.post("/register", (req, res) => {
   } else {
     const newUser = addNewUser(userID, email, pass, users);
     req.session['user_id'] = newUser;
-    emailList[userID] = email;
     res.redirect("/urls");
   }
 });
@@ -141,7 +152,7 @@ app.get("/urls/new", (req, res) => {
   if (req.session["user_id"]) {
     const templateVars = {
       user: req.session["user_id"],
-      email: emailList[req.session["user_id"]],
+      email: getEmailByUser(req.session["user_id"], users),
       urls: urls,
     };
     res.render("urls_new", templateVars);
@@ -155,7 +166,7 @@ app.get("/urls", (req, res) => {
   let email = undefined;
   if (req.session["user_id"]) {
     urls = urlforUsers(req.session["user_id"], urlDatabase);
-    email = emailList[req.session["user_id"]];
+    email = getEmailByUser(req.session["user_id"], users);
   }
   const templateVars = {
     user: req.session["user_id"],
@@ -178,7 +189,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars =
   {
     user: req.session["user_id"],
-    email: emailList[req.session["user_id"]],
+    email: getEmailByUser(req.session["user_id"], users),
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longurl
   };
