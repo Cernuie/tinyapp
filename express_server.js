@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080;
-const { emailExists, generateRandomString, urlforUsers } = require('./helperFuncs');
+const { emailExists, generateRandomString, urlforUsers, addNewUser } = require('./helperFuncs');
 
 app.use(
   cookieSession({
@@ -14,16 +14,6 @@ app.use(
   })
 );
 
-const addNewUser = (userID, email, password) => {
-  const salt = bcrypt.genSaltSync(10);
-  const newUser = {
-    id: userID,
-    email,
-    password: bcrypt.hashSync(password, salt),
-  };
-  users[userID] = newUser;
-  return userID;
-};
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -33,7 +23,6 @@ const urlDatabase = {
   "b2xVn2": {longurl: "http://www.lighthouselabs.ca", userID: "5fxigd"},
   "9sm5xK": {longurl: "http://www.google.com", userID: "5fxigd"}
 };
-
 
 const users = { '5fxigd':
 { id: '5fxigd',
@@ -128,7 +117,7 @@ app.post("/register", (req, res) => {
     res.status(400);
     res.send('Error code 400, password/email is blank');
   } else {
-    const newUser = addNewUser(userID, email, pass);
+    const newUser = addNewUser(userID, email, pass, users);
     req.session['user_id'] = newUser;
     console.log(users);
     res.redirect("/urls");
@@ -167,15 +156,16 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  console.log(urlDatabase);
   let urls = undefined;
+  let email = undefined;
   console.log(req.session["user_id"]);
   if (req.session["user_id"]) {
     urls = urlforUsers(req.session["user_id"], urlDatabase);
+    email = users[req.session["user_id"]]["email"]
   }
   const templateVars = {
     user: req.session["user_id"],
-    email: users[req.session["user_id"]]["email"],
+    email: email,
     urls: urls,
   };
   res.render("urls_index", templateVars);

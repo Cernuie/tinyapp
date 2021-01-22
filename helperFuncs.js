@@ -23,9 +23,23 @@ const urlforUsers = (id, urlDatabase) => {
   return returnedURLs;
 };
 
+
+const addNewUser = (userID, email, password, users) => {
+  const salt = bcrypt.genSaltSync(10);
+  const newUser = {
+    id: userID,
+    email,
+    password: bcrypt.hashSync(password, salt),
+  };
+  users[userID] = newUser;
+  return userID;
+};
+
+
 module.exports = {
   emailExists,
   generateRandomString,
   urlforUsers,
+  addNewUser
 };
 
