@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080;
-const { generateRandomString, urlforUsers, addNewUser, checkEmails } = require('./helperFuncs');
+const { generateRandomString, urlforUsers, addNewUser, checkEmails, getUserByEmail } = require('./helpers');
 
 app.use(
   cookieSession({
@@ -39,7 +39,7 @@ app.listen(PORT, () => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const pwd = req.body.password;
-  if (checkEmails(email, emailList)) {
+  if (getUserByEmail) {
     if (bcrypt.compareSync(pwd, users[email]["password"])) {
       req.session['user_id'] = users[email]["id"];
       res.redirect("/urls");

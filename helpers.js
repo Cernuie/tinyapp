@@ -36,11 +36,19 @@ const addNewUser = (userID, email, password, users) => {
   return userID;
 };
 
+const getUserByEmail = (email, users) => {
+  for (let id of Object.keys(users)) {
+    if (email === users[id]["email"]) {
+      return id;
+    }
+  }
+};
 
 module.exports = {
   generateRandomString,
   urlforUsers,
   addNewUser,
-  checkEmails
+  checkEmails,
+  getUserByEmail
 };
 
