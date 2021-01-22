@@ -7,13 +7,15 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" href="/urls/new">Create New URL</a> 
       </div>
-      <% if(user){ %> 
-        <h5>Logged in as: <%= email %></h5> 
-        <form action ="/logout" method="POST">
-          <button type="submit" class="btn btn-danger">LOGOUT</button></form>
-        <% } else { %>
+    <div class="navbar-collapse nav justify-content-end">
+      <% if (user) { %>
+        <b>Logged in as: <%= email %></b>
+        <form action="/logout" method="post">
+          <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+      <% } else { %>
         <form method="GET" action="/login">
           <button class="btn btn-primary">Login</button>
         </form>
