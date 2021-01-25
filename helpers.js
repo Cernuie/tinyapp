@@ -21,10 +21,9 @@ const checkEmails = (email, users) => {
   for (let key of Object.keys(users)) {
     if (key === email) {
       return true;
-    } else {
-      return false;
-    }
+    }    
   }
+  return false;
 };
 
 const addNewUser = (userID, email, password, users) => {
