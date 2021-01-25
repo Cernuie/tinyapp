@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
 const { generateRandomString, urlforUsers, addNewUser, checkEmails, getUserByEmail, getEmailByUser } = require('./helpers');
+const e = require("express");
 app.use(
   cookieSession({
     name: 'session',
@@ -132,7 +133,11 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  if(!(req.session['user_id'])) {
+    res.redirect("/login")
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -168,12 +173,19 @@ app.get("/urls", (req, res) => {
     urls = urlforUsers(req.session["user_id"], urlDatabase);
     email = getEmailByUser(req.session["user_id"], users);
   }
+
   const templateVars = {
     user: req.session["user_id"],
     email: email,
     urls: urls,
   };
-  res.render("urls_index", templateVars);
+
+  if (!req.session["user_id"]) {
+    res.status(403);
+    res.send("You must be logged in to view this page.")
+  } else {
+    res.render("urls_index", templateVars);
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
