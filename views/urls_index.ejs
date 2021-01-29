@@ -15,28 +15,36 @@
   <%- include('./partials/_header'); %>
 </header>
   <main style="margin: 1em;">
-    <h3>My URLs</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Short URL</th>
-          <th scope="col">Long URL</th>
-          <th scope="col">Edit</th>
-          <th scope="col">Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% for(let url in urls) { %>
-          <tr>
-            <td><%= url %></td>
-            <td><%= urls[url].longurl %></td>
-            <td><form method="GET" action="/urls/<%= url %>"><button class="btn btn-primary">Edit</button></form></td>
-            <td><form method="POST" action="/urls/<%= url %>/delete"><button class="btn btn-primary">Delete</button></form>
-            </td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
+    <% if (!user) { %>
+      <div class="card text-center">
+        <div class="card body">
+          <h4>Please log in or register to use this site.</h4>
+        </div>
+      </div>
+      <% } else { %>
+        <h3>My URLs</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Short URL</th>
+              <th scope="col">Long URL</th>
+              <th scope="col">Edit</th>
+              <th scope="col">Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(let url in urls) { %>
+              <tr>
+                <td><%= url %></td>
+                <td><%= urls[url].longurl %></td>
+                <td><form method="GET" action="/urls/<%= url %>"><button class="btn btn-primary">Edit</button></form></td>
+                <td><form method="POST" action="/urls/<%= url %>/delete"><button class="btn btn-primary">Delete</button></form>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+<% } %>    
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

@@ -21,7 +21,7 @@ const checkEmails = (email, users) => {
   for (let key of Object.keys(users)) {
     if (key === email) {
       return true;
-    }    
+    }
   }
   return false;
 };

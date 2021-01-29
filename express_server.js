@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
 const { generateRandomString, urlforUsers, addNewUser, checkEmails, getUserByEmail, getEmailByUser } = require('./helpers');
-const e = require("express");
 app.use(
   cookieSession({
     name: 'session',
@@ -63,12 +62,17 @@ app.post("/login", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const ID = generateRandomString();
-  const urlObj = {
-    longurl: req.body.longURL,
-    userID: req.session["user_id"]
-  };
-  urlDatabase[ID] = urlObj;
-  res.redirect(`/urls/${ID}`);
+  if (req.session['user_id']) {
+    const urlObj = {
+      longurl: req.body.longURL,
+      userID: req.session["user_id"]
+    };
+    urlDatabase[ID] = urlObj;
+    res.redirect(`/urls/${ID}`);
+  } else {
+    res.status(401);
+    res.send("Please log in to do this request");
+  }
 });
 
 app.post("/urls/:id", (req,res) => {
@@ -133,8 +137,8 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  if(!(req.session['user_id'])) {
-    res.redirect("/login")
+  if (!(req.session['user_id'])) {
+    res.redirect("/login");
   } else {
     res.redirect("/urls");
   }
@@ -169,6 +173,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   let urls = undefined;
   let email = undefined;
+  
   if (req.session["user_id"]) {
     urls = urlforUsers(req.session["user_id"], urlDatabase);
     email = getEmailByUser(req.session["user_id"], users);
@@ -179,16 +184,15 @@ app.get("/urls", (req, res) => {
     email: email,
     urls: urls,
   };
-
-  if (!req.session["user_id"]) {
-    res.status(403);
-    res.send("You must be logged in to view this page.")
-  } else {
-    res.render("urls_index", templateVars);
-  }
+  res.render("urls_index", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if (!(shortURL in urlDatabase)) {
+    res.status(404);
+    res.send('Status code 404, please give a valid ID');
+  }
   const longURL = urlDatabase[req.params.shortURL]["longurl"];
   if (longURL === undefined) {
     res.send('404, try again');
@@ -198,12 +202,30 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars =
-  {
-    user: req.session["user_id"],
-    email: getEmailByUser(req.session["user_id"], users),
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longurl
-  };
-  res.render("urls_show", templateVars);
+  const shortURL = req.params.shortURL;
+  const urlID = urlDatabase[shortURL];
+  const ID = req.session["user_id"];
+  //check if the urlID and session ID do not match
+
+
+  if (req.session["user_id"]) {
+
+    if (ID !== urlID) {
+      res.status(401);
+      res.send(`You're not authorized to view this ID!`);
+    } else {
+      const templateVars =
+    {
+      user: ID,
+      email: getEmailByUser(req.session["user_id"], users),
+      shortURL: shortURL,
+      longURL: urlDatabase[req.params.shortURL].longurl
+    };
+      res.render("urls_show", templateVars);
+    }
+  } else {
+    res.status(400);
+    res.send("Please log in to view this url!");
+  }
+
 });
