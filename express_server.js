@@ -112,7 +112,7 @@ app.post("/register", (req, res) => {
   if (checkEmails(email, users)) {
     res.status(400).send('Error code 400: This email already exists.');
     res.redirect("/register");
-  } else if (req.body.email === '' || req.body.password === '') {
+  } else if (!(req.body.email) || !(req.body.password)) {
     res.status(400).send('Error code 400, password/email is blank');
   } else {
     const newUser = addNewUser(userID, email, pass, users);
