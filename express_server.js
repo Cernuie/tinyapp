@@ -29,11 +29,6 @@ const users = { 'cernvii@gmail.com':
   
 };
 
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 //decided to group things by post and get
 
 app.post("/login", (req, res) => {
@@ -42,8 +37,7 @@ app.post("/login", (req, res) => {
   //when post to login, we check to see if the email and password fields are correct
   //if it passes every test we initialize a session cookie and redirect them to /urls
   if (email === "" || pwd === "") {
-    res.status(403);
-    res.send("Error 403: Please enter an email/password!");
+    res.status(403).send("Error 403: Please enter an email/password!");;
   }
 
   if (getUserByEmail) {
@@ -51,12 +45,10 @@ app.post("/login", (req, res) => {
       req.session['user_id'] = users[email]["id"];
       res.redirect("/urls");
     } else {
-      res.status(403);
-      res.send("Error 403: Bad password, try again!");
+      res.status(403).send("Error 403: Bad password, try again!");;
     }
   } else {
-    res.status(403);
-    res.send("Error 403: Wrong email, try again!");
+    res.status(403).send("Error 403: Wrong email, try again!");;
   }
 });
 
@@ -70,8 +62,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[ID] = urlObj;
     res.redirect(`/urls/${ID}`);
   } else {
-    res.status(401);
-    res.send("Please log in to do this request");
+    res.status(401).send("Please log in to do this request");;
   }
 });
 
@@ -84,12 +75,10 @@ app.post("/urls/:id", (req,res) => {
       urlDatabase[req.params.id].longurl = req.body.newURL;
       res.redirect('/urls');
     } else {
-      res.status(400);
-      res.send("This isn't your URL to edit, please log in to the account to edit it.");
+      res.status(400).send("This isn't your URL to edit, please log in to the account to edit it.");;
     }
   } else {
-    res.status(400);
-    res.send("You aren't logged in, please log in to edit this URL");
+    res.status(400).send("You aren't logged in, please log in to edit this URL");;
   }
 });
 
@@ -107,12 +96,10 @@ app.post("/urls/:shortURL/delete", (req, res) =>{
       delete urlDatabase[req.params.shortURL];
       res.redirect('/urls');
     } else {
-      res.status(400);
-      res.send("This isn't your URL to delete, please log in to the account to delete it.");
+      res.status(400).send("This isn't your URL to delete, please log in to the account to delete it.");;
     }
   } else {
-    res.status(400);
-    res.send("You aren't logged in, please log in to delete this URL");
+    res.status(400).send("You aren't logged in, please log in to delete this URL");
   }
 });
 
@@ -123,12 +110,10 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const userID = generateRandomString();
   if (checkEmails(email, users)) {
-    res.status(400);
-    res.send('Error code 400: This email already exists.');
+    res.status(400).send('Error code 400: This email already exists.');
     res.redirect("/register");
   } else if (req.body.email === '' || req.body.password === '') {
-    res.status(400);
-    res.send('Error code 400, password/email is blank');
+    res.status(400).send('Error code 400, password/email is blank');
   } else {
     const newUser = addNewUser(userID, email, pass, users);
     req.session['user_id'] = newUser;
@@ -173,12 +158,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   let urls = undefined;
   let email = undefined;
-  
   if (req.session["user_id"]) {
     urls = urlforUsers(req.session["user_id"], urlDatabase);
     email = getEmailByUser(req.session["user_id"], users);
   }
-
   const templateVars = {
     user: req.session["user_id"],
     email: email,
@@ -190,8 +173,7 @@ app.get("/urls", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   if (!(shortURL in urlDatabase)) {
-    res.status(404);
-    res.send('Status code 404, please give a valid ID');
+    res.status(404).send('Status code 404, please give a valid ID');
   }
   const longURL = urlDatabase[req.params.shortURL]["longurl"];
   if (longURL === undefined) {
@@ -206,13 +188,9 @@ app.get("/urls/:shortURL", (req, res) => {
   const urlID = urlDatabase[shortURL];
   const ID = req.session["user_id"];
   //check if the urlID and session ID do not match
-
-
   if (req.session["user_id"]) {
-
     if (ID !== urlID) {
-      res.status(401);
-      res.send(`You're not authorized to view this ID!`);
+      res.status(401).send(`You're not authorized to view this ID!`);
     } else {
       const templateVars =
     {
@@ -224,8 +202,10 @@ app.get("/urls/:shortURL", (req, res) => {
       res.render("urls_show", templateVars);
     }
   } else {
-    res.status(400);
-    res.send("Please log in to view this url!");
+    res.status(400).send("Please log in to view this url!");
   }
+});
 
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
