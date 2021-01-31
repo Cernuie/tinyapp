@@ -185,7 +185,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const urlID = urlDatabase[shortURL];
+  const urlID = urlDatabase[shortURL]["userID"];
   const ID = req.session["user_id"];
   //check if the urlID and session ID do not match
   if (req.session["user_id"]) {
